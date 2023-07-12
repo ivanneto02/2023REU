@@ -6,9 +6,13 @@ load_dotenv()
 # PREPROCESSING VARIABLES
 SCRAPED_DATA_PATH = os.environ["_SCRAPED_DATA_PATH"]
 SCRAPED_DATA_FILE = os.environ["_SCRAPED_DATA_FILE"]
-UMLS_UNAME        = os.environ["_UMLS_UNAME"]
+UMLS_HOST         = os.environ["_UMLS_HOST"]
+# UMLS_PORT         = os.environ["_UMLS_PORT"]
+UMLS_DB           = os.environ["_UMLS_DB"]
+UMLS_USER         = os.environ["_UMLS_USER"]
 UMLS_PASSW        = os.environ["_UMLS_PASSW"]
 SAVE_DATA_PATH    = os.environ["_SAVE_DATA_PATH"]
+SAVE_DATA_FILE    = os.environ["_SAVE_DATA_FILE"]
 
 # EMBEDDING VARIABLES
 READY_DATA_PATH   = os.environ["_READY_DATA_PATH"]
@@ -17,3 +21,7 @@ EMBED_SAVE_FILE   = os.environ["_EMBED_SAVE_FILE"]
 
 # ANALYSIS VARIABLES
 # - nothing yet :(
+
+
+# TESTING PURPOSES
+NROWS = int(os.environ["_NROWS"])

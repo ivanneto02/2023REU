@@ -21,7 +21,20 @@ def main():
         print("> Starting [PREPROCESSING] process")
         # Preprocessing steps
         preprocessing.combine_data()
-        preprocessing.tag_definitions()
+
+        ## Important step - Later will include a non-metamap version, with
+        ## just an edit distance based tagging of CUIs. Terms that look like
+        ## each other may also be related to one another.
+        ### ** For now only uses MetaMap to tag exact terms and ngrams.
+        preprocessing.tag_terms()
+
+        ## Important step - Later will include another version of this step,
+        ## which uses source-based html removal. Currently I just remove ALL
+        ## html tags and leave only the raw text. This is for testing purposes
+        ## for the pipeline
+        preprocessing.extract_nonumls_definitions() # May take a while
+        ###
+
         preprocessing.drop_nas()
         preprocessing.limit_definitions()
         preprocessing.normalize() # This is probably very important

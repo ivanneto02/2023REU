@@ -1,3 +1,3 @@
-def tag_definitions():
+def tag_terms():
     print(" > Tagging definitions...")
     pass
