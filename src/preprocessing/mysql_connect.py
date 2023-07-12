@@ -2,7 +2,6 @@ import mysql.connector
 from config import *
 
 def connect(user=None, password=None, host=None, database=None):
-    import mysql.connector
     cnx = mysql.connector.connect(
         user = user,
         password = password,

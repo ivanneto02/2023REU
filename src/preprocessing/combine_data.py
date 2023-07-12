@@ -15,7 +15,7 @@ def combine_data():
     df = pd.concat([df_nonumls, df_umls], axis=0)
     df.reset_index(inplace=True)
 
-    print(df)
+    # print(df)
 
     print(f"   - Saving to {SAVE_DATA_PATH + SAVE_DATA_FILE}")
     df.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)
@@ -58,6 +58,7 @@ def load_umls():
             cursor.execute(definitions_query)
             results = cursor.fetchall()
             umls_df = pd.DataFrame(results, columns=columns)
+            umls_df["source"] = "umls"
 
         except Exception as e:
             print("         ! Executing load UMLS query went wrong !")
@@ -74,5 +75,6 @@ def load_nonumls():
     df = pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS)
     # filter into desired columns
     df = df[["name", "raw_html"]]
+    df["source"] = "scraped"
     df.rename(inplace=True, columns={'raw_html' : 'definition'})
     return df

@@ -2,43 +2,40 @@ import pandas as pd
 from config import *
 from pymetamap import MetaMap
 import time
+from bs4 import BeautifulSoup, SoupStrainer
+import re
 
 def extract_nonumls_definitions():
-    print(" > Extracting non-UMLS definitions... (may take a while)")
-    
+    print(" > Extracting NON-UMLS definitions")
+
     print("     - Reading data")
-    df = pd.read_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, nrows=NROWS)
-    print(df.head(5))
+    df = pd.read_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, nrows=None)
 
-    print("     - Extracting definitions")
-    metamap_base_dir = '/home/ivan/metamapdownload/public_mm/'
-    metamap_bin_dir = 'bin/metamap'
+    # separate into umls vs non-umls
+    print("     - Separating scraped vs. umls")
+    df_scraped = df[df["source"] == "scraped"]
+    df_umls    = df[df["source"] == "umls"]
 
-    metamap_pos_server_dir = 'bin/skrmedpostctl'
-    metamap_wsd_server_dir = 'bin/wsdserverctl'
+    try:
+        # extract definitions from html
+        print("     - Extracting definitions (may take a while)")
+        df_scraped["definition"] = df_scraped["definition"].apply(extract)
+    except Exception as e:
+        print("             ! Something went wrong with extracting definitions !")
+        print(e)
 
-    print("     - Starting `skrmedpostctl` and `wsdserverctl`")
-    os.system(metamap_base_dir + metamap_pos_server_dir + ' start') # Part of speech tagger
-    os.system(metamap_base_dir + metamap_wsd_server_dir + ' start') # Word sense disambiguation 
+    # put the two together again
+    df_final = pd.concat([df_scraped, df_umls])
+    print(df_final)
 
-    print("     - Waiting for `skrmedpostctl` and `wsdserverctl` to start")
-    time.sleep(10)
+    # save data
+    print("     - Saving")
+    df_final.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)
 
-    metam = MetaMap.get_instance(metamap_base_dir + metamap_bin_dir)
-    term_list = df["name"].to_list()
-    term_indexes = list(range(len(term_list)))
-
-    concepts, errs = metam.extract_concepts(term_list, term_indexes)
-
-    # Look at the output:
-    for i in range(0, 5):
-        print(concepts[i])
-
-    print("     - Stopping `skrmedpostctl` and `wsdserverctl`")
-    os.system(metamap_base_dir + metamap_pos_server_dir + ' stop') # Part of speech tagger
-    os.system(metamap_base_dir + metamap_wsd_server_dir + ' stop') # Word sense disambiguation 
-
-    print("     - Waiting for `skrmedpostctl` and `wsdserverctl` to stop")
-    time.sleep(5)
-
-    print("     - Done")
+def extract(x):
+    strainer = SoupStrainer("p")
+    soup = BeautifulSoup(x, parse_only=strainer)
+    text = soup.get_text().replace("\n", "")
+    text = text.replace("\t", " ")
+    text = re.sub("\ +", " ", text)
+    return text
