@@ -22,6 +22,12 @@ EMBED_SAVE_FILE   = os.environ["_EMBED_SAVE_FILE"]
 # ANALYSIS VARIABLES
 # - nothing yet :(
 
-
 # TESTING PURPOSES
-NROWS = int(os.environ["_NROWS"])
+NROWS = 100
+if os.environ["_NROWS"] == "None":
+    NROWS = None
+else:
+    NROWS = int(os.environ["_NROWS"])
+
+# RELEVANT PARAMETERS
+KEEPWORDS         = int(os.environ["_KEEPWORDS"])

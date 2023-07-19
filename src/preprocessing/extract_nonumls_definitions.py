@@ -4,6 +4,7 @@ from pymetamap import MetaMap
 import time
 from bs4 import BeautifulSoup, SoupStrainer
 import re
+from tqdm import tqdm, tqdm_pandas
 
 def extract_nonumls_definitions():
     print(" > Extracting NON-UMLS definitions")
@@ -18,8 +19,10 @@ def extract_nonumls_definitions():
 
     try:
         # extract definitions from html
+        tqdm.pandas()
+
         print("     - Extracting definitions (may take a while)")
-        df_scraped["definition"] = df_scraped["definition"].apply(extract)
+        df_scraped["definition"] = df_scraped["definition"].progress_apply(extract)
     except Exception as e:
         print("             ! Something went wrong with extracting definitions !")
         print(e)
@@ -32,9 +35,9 @@ def extract_nonumls_definitions():
     print("     - Saving")
     df_final.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)
 
+strainer = SoupStrainer("p")
 def extract(x):
-    strainer = SoupStrainer("p")
-    soup = BeautifulSoup(x, parse_only=strainer)
+    soup = BeautifulSoup(x, parse_only=strainer, parser="lxml", features="lxml")
     text = soup.get_text().replace("\n", "")
     text = text.replace("\t", " ")
     text = re.sub("\ +", " ", text)

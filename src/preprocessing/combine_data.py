@@ -73,6 +73,7 @@ def load_umls():
 
 def load_nonumls():
     df = pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS)
+    print(f" > Length of data: {len(df)}")
     # filter into desired columns
     df = df[["name", "raw_html"]]
     df["source"] = "scraped"

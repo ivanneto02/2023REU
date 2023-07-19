@@ -30,6 +30,10 @@ def main():
         preprocessing.extract_nonumls_definitions() # May take a while
         ###
 
+        ## Important step - This will impact the speed of the program. The more
+        ## words we keep in the definition, the slower it will run
+        preprocessing.limit_definitions()
+
         ## Important step - Later will include a non-metamap version, with                      PLEASE READ     **
         ## just an edit distance based tagging of CUIs. Terms that look like
         ## each other may also be related to one another.
