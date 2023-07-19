@@ -2,6 +2,10 @@ from config import *
 import time
 from pymetamap import MetaMap
 import pandas as pd
+import subprocess
+
+import io
+import sys
 
 def tag_terms():
     print(" > Tagging terms...")
@@ -35,9 +39,14 @@ def tag_terms():
     metamap_wsd_server_dir = 'bin/wsdserverctl'
 
     print("     - Starting `skrmedpostctl` and `wsdserverctl`")
-    os.system(metamap_base_dir + metamap_pos_server_dir + ' start') # Part of speech tagger
-    os.system(metamap_base_dir + metamap_wsd_server_dir + ' start') # Word sense disambiguation 
+    call1 = [metamap_base_dir + metamap_pos_server_dir, "start"]
+    call2 = [metamap_base_dir + metamap_wsd_server_dir, "start"]
 
+    with open(os.devnull, 'w') as fnull:
+        subprocess.Popen(call1, stdout=fnull, stderr=subprocess.PIPE)
+    with open(os.devnull, 'w') as fnull:
+        subprocess.Popen(call2, stdout=fnull, stderr=subprocess.PIPE)
+        
     print("     - Waiting for `skrmedpostctl` and `wsdserverctl` to start")
     time.sleep(5)
 
@@ -47,7 +56,10 @@ def tag_terms():
     term_indexes = list(range(len(term_list)))
     # print(term_indexes)
 
+    print("     - Extracting CUIs from terms")
+    sys.stdout = open(os.devnull, 'w')
     concepts, errs = metam.extract_concepts(term_list, term_indexes)
+    sys.stdout = sys.__stdout__
 
     concepts_df = pd.DataFrame(concepts)[["index", "cui"]]
     concepts_df["index"] = concepts_df["index"].astype("Int64")
@@ -67,8 +79,12 @@ def tag_terms():
     final_df.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)
 
     print("     - Stopping `skrmedpostctl` and `wsdserverctl`")
+
+    save_stdout = sys.stdout
+    sys.stdout = open(os.devnull, 'w')
     os.system(metamap_base_dir + metamap_pos_server_dir + ' stop') # Part of speech tagger
     os.system(metamap_base_dir + metamap_wsd_server_dir + ' stop') # Word sense disambiguation 
+    sys.stdout = sys.__stdout__
 
     print("     - Waiting for `skrmedpostctl` and `wsdserverctl` to stop")
     time.sleep(5)
