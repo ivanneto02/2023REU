@@ -1,34 +1,47 @@
 import pandas as pd
-
 from gensim.models import Word2Vec
-
 from gensim.parsing.preprocessing import remove_stopwords, preprocess_string
 
-def main():
-    df = pd.read_csv("/mnt/c/Users/ivana/Desktop/Documents/Research/UCR/DS-PATH/working_dir/data/ready/ready_to_embed.csv", nrows=1000)
-    
-    sentences = df["definition"].to_list()
-    sentences = [ remove_stopwords(s.lower()) for s in sentences ]
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
+import tqdm
+
+def main():
+    print(" > Reading data")
+    df = pd.read_csv(os.environ["_READY_DATA_PATH"] + os.environ["_READY_DATA_FILE"], nrows=None)
+    
+    print(" > Preprocessing sentences")
+    sentences = df["definition"].to_list()
+    sentences_pre = []
+    for sen in tqdm.tqdm(sentences):
+        sentences_pre.append(preprocess_string(remove_stopwords(sen.lower())))
+
+    print(" > Compiling word2vec")
     model = Word2Vec(
-        sentences = sentences,
+        sentences = tqdm.tqdm(sentences_pre),
         vector_size = 200,
         window = 7,
         min_count = 1,
         workers = 4
     )
 
+    print(" > Training word2vec")
     # train the models
     model.train(
-        sentences,
-        total_examples=len(sentences),
-        epochs = 10
+        tqdm.tqdm(sentences_pre),
+        total_examples=len(sentences_pre),
+        epochs = 20
     )
 
-    # model.save("./src/scripting/saves/word2vec.model")
+    print(" > Embedding sentences")
+    embedded = []
+    for sen in tqdm.tqdm(sentences_pre):
+        embedded.append(model.wv[sen])
 
-    print(model.wv)
-    print(model.wv["treatment"])
+    for i in range(0, 5):
+        print(embedded[i][:5])
 
 if __name__ == "__main__":
     main()

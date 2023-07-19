@@ -4,7 +4,7 @@ from pymetamap import MetaMap
 import time
 from bs4 import BeautifulSoup, SoupStrainer
 import re
-from tqdm import tqdm, tqdm_pandas
+from tqdm import tqdm
 
 def extract_nonumls_definitions():
     print(" > Extracting NON-UMLS definitions")
@@ -29,7 +29,7 @@ def extract_nonumls_definitions():
 
     # put the two together again
     df_final = pd.concat([df_scraped, df_umls])
-    print(df_final)
+    df_final["definition"] = df_final["name"] + " " + df_final["definition"]
 
     # save data
     print("     - Saving")
