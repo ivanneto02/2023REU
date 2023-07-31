@@ -5,3 +5,4 @@ logs/
 saves/
 training_logs/
 trash
+*.ipynb

@@ -36,3 +36,17 @@ else:
 
 # RELEVANT PARAMETERS
 KEEPWORDS         = int(os.environ["_KEEPWORDS"])
+
+# DOC2VEC Hyperparameters
+LAYER_SIZE       = int(os.environ["_LAYER_SIZE"])
+WINDOW_SIZE      = int(os.environ["_WINDOW_SIZE"])
+LEARNING_RATE    = float(os.environ["_LEARNING_RATE"])
+EPOCHS           = int(os.environ["_EPOCHS"])
+WORKERS          = int(os.environ["_WORKERS"])
+MIN_COUNT        = int(os.environ["_MIN_COUNT"])
+NEGATIVE_SAMPLES = int(os.environ["_NEGATIVE_SAMPLES"])
+NS_EXPONENT      = float(os.environ["_NS_EXPONENT"])
+DM               = int(os.environ["_DM"])
+HS               = int(os.environ["_HS"])
+DM_CONCAT        = int(os.environ["_DM_CONCAT"])
+DM_MEAN          = int(os.environ["_DM_MEAN"])

@@ -3,6 +3,9 @@ from config import *
 from .mysql_connect import connect
 from .mysql_disconnect import disconnect
 
+from bs4 import BeautifulSoup, SoupStrainer
+
+
 def combine_data():
     print(" > Combining data...")
     print("   - Loading all non-UMLS data")
@@ -34,7 +37,7 @@ def load_umls():
         # Grab the table
         definitions_query = f'''
             SELECT                                              
-                DISTINCT MRDEF.CUI, MRCONSO.STR, MRDEF.DEF      
+                DISTINCT MRDEF.CUI, MRDEF.DEF     
             FROM                                                
                 MRDEF, MRCONSO                                  
             WHERE                                               
@@ -44,7 +47,7 @@ def load_umls():
         # DataFrame storing
         # cui, str, def
         umls_df = None
-        columns = ["cui", "name", "definition"]
+        columns = ["cui", "definition"]
 
         if NROWS is not None:
             definitions_query += f'''
@@ -71,8 +74,18 @@ def load_umls():
         print("        ! Loading UMLS went wrong !")
         print(e)
 
+def process_chunk(chunk):
+    strainer = SoupStrainer("p")
+    chunk[]
+
 def load_nonumls():
-    df = pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS)
+
+    final_df = pd.DataFrame()
+
+    for chunk in pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS, chunksize=10000):
+        # process chunk with beautifulsoup to only keep the needed parts (<p> fields)
+        final_df = pd.concat([final_df, process_chunk(chunk)])
+
     print(f" > Length of data: {len(df)}")
     # filter into desired columns
     df = df[["name", "raw_html"]]
