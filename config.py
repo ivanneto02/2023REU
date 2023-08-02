@@ -34,8 +34,10 @@ if os.environ["_NROWS"] == "None":
 else:
     NROWS = int(os.environ["_NROWS"])
 
+CHUNKSIZE        = int(os.environ["_CHUNKSIZE"])
+
 # RELEVANT PARAMETERS
-KEEPWORDS         = int(os.environ["_KEEPWORDS"])
+KEEPWORDS        = int(os.environ["_KEEPWORDS"])
 
 # DOC2VEC Hyperparameters
 LAYER_SIZE       = int(os.environ["_LAYER_SIZE"])

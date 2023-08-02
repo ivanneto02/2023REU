@@ -3,8 +3,9 @@ from config import *
 from .mysql_connect import connect
 from .mysql_disconnect import disconnect
 
-from bs4 import BeautifulSoup, SoupStrainer
+import tqdm
 
+from bs4 import BeautifulSoup, SoupStrainer
 
 def combine_data():
     print(" > Combining data...")
@@ -76,19 +77,24 @@ def load_umls():
 
 def process_chunk(chunk):
     strainer = SoupStrainer("p")
-    chunk[]
+    for i in range(0, len(chunk)):
+        soup = BeautifulSoup(chunk["raw_html"].iloc[i], parse_only=strainer, features="lxml")
+        chunk["raw_html"].iloc[i] = str(soup.text)
+    return chunk
 
 def load_nonumls():
-
-    final_df = pd.DataFrame()
-
-    for chunk in pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS, chunksize=10000):
+    df = pd.DataFrame()
+    i = 1
+    for chunk in pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS, chunksize=CHUNKSIZE):
         # process chunk with beautifulsoup to only keep the needed parts (<p> fields)
-        final_df = pd.concat([final_df, process_chunk(chunk)])
+        print(f"    - Loading chunk ({i})")
+        df = pd.concat([df, process_chunk(chunk)])
+        i += 1
 
     print(f" > Length of data: {len(df)}")
     # filter into desired columns
     df = df[["name", "raw_html"]]
+
     df["source"] = "scraped"
     df.rename(inplace=True, columns={'raw_html' : 'definition'})
     return df
