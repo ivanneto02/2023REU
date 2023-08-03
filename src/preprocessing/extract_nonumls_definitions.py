@@ -14,13 +14,12 @@ def extract_nonumls_definitions():
 
     # separate into umls vs non-umls
     print("     - Separating scraped vs. umls")
-    df_scraped = df[df["source"] == "scraped"]
-    df_umls    = df[df["source"] == "umls"]
+    df_scraped = df.loc[df["source"] == "scraped"].copy()
+    df_umls    = df.loc[df["source"] == "umls"].copy()
 
     try:
         # extract definitions from html
         tqdm.pandas()
-
         print("     - Extracting definitions (may take a while)")
         df_scraped["definition"] = df_scraped["definition"].progress_apply(extract)
     except Exception as e:
@@ -28,17 +27,21 @@ def extract_nonumls_definitions():
         print(e)
 
     # put the two together again
-    df_final = pd.concat([df_scraped, df_umls])
-    df_final["definition"] = df_final["name"] + " " + df_final["definition"]
+    df_final = pd.concat([df_scraped, df_umls], axis=0)
+
+    # print(df_final.head(10))
 
     # save data
-    print("     - Saving")
+    print(f"     - Saving to {SAVE_DATA_PATH + SAVE_DATA_FILE}")
     df_final.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)
 
 strainer = SoupStrainer("p")
 def extract(x):
-    soup = BeautifulSoup(x, parse_only=strainer, parser="lxml", features="lxml")
-    text = soup.get_text().replace("\n", "")
-    text = text.replace("\t", " ")
-    text = re.sub("\ +", " ", text)
-    return text
+    try:
+        soup = BeautifulSoup(x, parse_only=strainer, parser="lxml", features="lxml")
+        text = soup.get_text().replace("\n", "")
+        text = text.replace("\t", " ")
+        text = re.sub("\ +", " ", text)
+        return text
+    except Exception as e:
+        return None

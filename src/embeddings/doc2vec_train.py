@@ -12,41 +12,22 @@ from multiprocessing import Pool
 def doc2vec_train():
     print(" > Doc2Vec training...")
     print("     - Reading data")
-    df = pd.read_csv(READY_DATA_PATH + READY_DATA_FILE, nrows=1000)
+    df = pd.read_csv(READY_DATA_PATH + READY_DATA_FILE, nrows=None)
+
+    df["definition"] = df["name"] + " " + df["definition"]
 
     sentences = df["definition"].to_list()
     cuis      = df["cui"].to_list()
 
-    modelw = Word2Vec.load(MODEL_SAVE_PATH + MODEL_WORD2VEC)
-
     print("     - Preprocessing sentences")
-    # sentences = df["definition"].to_list()
     sentences_pre = []
     for sen in tqdm.tqdm(sentences):
         sentences_pre.append(preprocess_string(remove_stopwords(sen.lower())))
 
-    # print("     - Pre-embedding sentences")
-    # embeds = []
-    # for sent in tqdm.tqdm(sentences_pre):
-    #     embeds.append([ modelw.wv[i] for i in sent ])
-
-    # print(embeds[0])
-
-    print("     ")
+    print("     - Tagging documents")
     documents = [ TaggedDocument(words=doc, tags=[cuis[i]]) for i, doc in enumerate(sentences_pre) ]
 
-    print(documents[0])
-
-    # modelw = Word2Vec.load(MODEL_SAVE_PATH + MODEL_WORD2VEC)
-
-    # print("     - Embedding sentences")
-    # embedded = []
-    # for sen in tqdm.tqdm(sentences_pre):
-    #     embedded.append(modelw.wv[sen])
-
-    print("     - Training Doc2Vec")
     modeld = Doc2Vec(
-        tqdm.tqdm(documents),
         vector_size = LAYER_SIZE,
         window = WINDOW_SIZE,
         min_count = MIN_COUNT,
@@ -61,7 +42,17 @@ def doc2vec_train():
         dm_mean   = DM_MEAN
     )
 
-    # inferred_vector = modeld.infer_vector(["test", "ting"])
-    # print(inferred_vector)
+    # Build the vocabulary from the documents
+    print("     - Building vocabulary")
+    modeld.build_vocab(tqdm.tqdm(documents, total=len(documents)))
 
+    print("     - Training model")
+    for epoch in range(EPOCHS):
+        # Wrap the documents iterator with tqdm and set leave=False to overwrite the progress bar
+        documents_with_progress = tqdm.tqdm(documents, total=len(documents), desc="Epoch {:02d}/{:02d}".format(epoch+1, EPOCHS))
+        
+        # Train the model for the current epoch
+        modeld.train(documents_with_progress, total_examples=modeld.corpus_count, epochs=1)
+
+    print("     - Saving model")
     modeld.save(MODEL_SAVE_PATH + MODEL_DOC2VEC)

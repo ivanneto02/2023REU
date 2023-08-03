@@ -15,14 +15,14 @@ def limit_def(x):
 
 def limit_definitions():
     print(" > Limiting definitions...")
-    df = pd.read_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, nrows=NROWS)
+    df = pd.read_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, nrows=None)
 
-    print(f" > Length of data {len(df)}")
+    print(f"    - Length of data {len(df)}")
 
-    print(" > Removing excess words")
+    print("     - Removing excess words")
 
     tqdm.tqdm.pandas()
     df["definition"] = df["definition"].progress_apply(limit_def)
 
-    print(" > Saving definitions...")
+    print(f"     - Saving to {SAVE_DATA_PATH + SAVE_DATA_FILE}")
     df.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)

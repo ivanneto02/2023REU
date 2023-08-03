@@ -11,7 +11,7 @@ def main():
         # ---------
         print("> Starting [TRAINING] process")
         # Training steps
-        embeddings.word2vec_pre()                   # Step in order to retain co-ocurrance information
+        # embeddings.word2vec_pre()                   # Step in order to retain co-ocurrance information
         embeddings.doc2vec_train()                  # Step in order to actually classify CUIs into embeds
 
         print("> Done!")

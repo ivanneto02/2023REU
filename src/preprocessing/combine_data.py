@@ -19,11 +19,8 @@ def combine_data():
     df = pd.concat([df_nonumls, df_umls], axis=0)
     df.reset_index(inplace=True)
 
-    # print(df)
-
     print(f"   - Saving to {SAVE_DATA_PATH + SAVE_DATA_FILE}")
     df.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)
-    pass
 
 def load_umls():
     try:
@@ -38,7 +35,7 @@ def load_umls():
         # Grab the table
         definitions_query = f'''
             SELECT                                              
-                DISTINCT MRDEF.CUI, MRDEF.DEF     
+                DISTINCT MRDEF.CUI, MRCONSO.STR, MRDEF.DEF     
             FROM                                                
                 MRDEF, MRCONSO                                  
             WHERE                                               
@@ -48,7 +45,7 @@ def load_umls():
         # DataFrame storing
         # cui, str, def
         umls_df = None
-        columns = ["cui", "definition"]
+        columns = ["cui", "name", "definition"]
 
         if NROWS is not None:
             definitions_query += f'''
@@ -68,6 +65,8 @@ def load_umls():
             print("         ! Executing load UMLS query went wrong !")
             print(e)
 
+        print(f"         - Length of data: {len(umls_df)}")
+
         return umls_df
 
         # Make sure to disconnect
@@ -75,23 +74,10 @@ def load_umls():
         print("        ! Loading UMLS went wrong !")
         print(e)
 
-def process_chunk(chunk):
-    strainer = SoupStrainer("p")
-    for i in range(0, len(chunk)):
-        soup = BeautifulSoup(chunk["raw_html"].iloc[i], parse_only=strainer, features="lxml")
-        chunk["raw_html"].iloc[i] = str(soup.text)
-    return chunk
-
 def load_nonumls():
-    df = pd.DataFrame()
-    i = 1
-    for chunk in pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS, chunksize=CHUNKSIZE):
-        # process chunk with beautifulsoup to only keep the needed parts (<p> fields)
-        print(f"    - Loading chunk ({i})")
-        df = pd.concat([df, process_chunk(chunk)])
-        i += 1
+    df = pd.read_csv(SCRAPED_DATA_PATH + SCRAPED_DATA_FILE, nrows=NROWS)
 
-    print(f" > Length of data: {len(df)}")
+    print(f"        - Length of data: {len(df)}")
     # filter into desired columns
     df = df[["name", "raw_html"]]
 
