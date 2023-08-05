@@ -1,6 +1,7 @@
 import src.preprocessing as preprocessing
 import src.embeddings as embeddings
 import src.analysis as analysis
+import src.scrapingwiki as scrapingwiki
 
 def main():
     '''
@@ -59,12 +60,21 @@ def main():
         preprocessing.normalize() # This is probably very important
         
         # ---------
+        print("> Starting [SCRAPING] process")
+        ## This step is EXTREMELY important because it allows us to have the
+        ## wikipedia data. Since it takes a VERY long time to run, I will ensure
+        ## the user knows exactly what they are running by adding command line
+        ## arguments to make this option available only through setting a command
+        ## line argument
+        scrapingwiki.scrapeterms()
+
+        # ---------
         print("> Starting [TRAINING] process")
         # Training steps
         # embeddings.word2vec_pre()                   # Step in order to retain co-ocurrance information
         # Currently determining if the step above is even
         # needed for preprocessing
-        
+
         embeddings.doc2vec_train()                  # Step in order to actually classify CUIs into embeds
 
         # ---------

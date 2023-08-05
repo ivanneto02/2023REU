@@ -20,9 +20,9 @@ def main():
 
     df = pd.read_csv(os.environ["_READY_DATA_PATH"] + os.environ["_READY_DATA_FILE"], nrows=10)
 
-    for i in tqdm.tqdm(range())
-
     name_test = df["name"].iloc[0] # Name to search
+    # name_test = "UK"
+
     language_code = 'en'
     number_of_results = 1
     headers = {
@@ -65,8 +65,6 @@ def main():
     print(f"URL: {article_url}")
     print(f"Description: {article_description}")
     print(f"Thumbnail: {thumbnail_url}")
-
-    time.sleep()
 
 if __name__ == "__main__":
     main()

@@ -24,6 +24,11 @@ MODEL_SAVE_PATH   = os.environ["_MODEL_SAVE_PATH"]
 MODEL_WORD2VEC    = os.environ["_MODEL_WORD2VEC"]
 MODEL_DOC2VEC     = os.environ["_MODEL_DOC2VEC"]
 
+# WIKIPEDIA DATA VARIABLES
+WIKI_DATA_PATH    = os.environ["_WIKI_DATA_PATH"]
+WIKI_DATA_FILE    = os.environ["_WIKI_DATA_FILE"]
+PARALLEL_SIZE     = int(os.environ["_PARALLEL_SIZE"])
+
 # ANALYSIS VARIABLES
 # - nothing yet :(
 

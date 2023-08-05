@@ -86,14 +86,21 @@ def tag_terms():
                 )
                 concepts += curr_con
 
+    # This DataFrame holds the tags that resulted from tagging our scraped data.
     concepts_df = pd.DataFrame(concepts)[["index", "cui"]]
     concepts_df["index"] = concepts_df["index"].astype("Int64")
 
-    # print("CONCEPTS DF:")
-    # print(concepts_df)
-
+    # Joins main DataFrame with tagged DataFrame, which gives us definitions tagged
+    # with CUIs. This is important because now we linked our scraped data with UMLS!
     joined_df = pd.merge(df_non_umls, concepts_df, on="index", how="outer")
-    # print(joined_df)
+
+    # For some reason the merge creates random 1's. I'm not sure about these, but I
+    # am going to drop them becaue they do not signify CUIs. Thus they are useless at
+    # the end of the day when training the model (will have to be dropped anyway)
+    print("     - Dropping random 1's")
+    joined_df.drop(joined_df[joined_df["cui"] == "1"].index, inplace=True)
+
+    print(joined_df)
 
     final_df = pd.concat([joined_df, df_umls], axis=0)
     final_df.drop(columns=["index"], inplace=True)

@@ -35,7 +35,7 @@ def load_umls():
         # Grab the table
         definitions_query = f'''
             SELECT                                              
-                DISTINCT MRDEF.CUI, MRCONSO.STR, MRDEF.DEF     
+                DISTINCT MRDEF.CUI, MRCONSO.STR, MRDEF.DEF
             FROM                                                
                 MRDEF, MRCONSO                                  
             WHERE                                               
@@ -60,6 +60,9 @@ def load_umls():
             results = cursor.fetchall()
             umls_df = pd.DataFrame(results, columns=columns)
             umls_df["source"] = "umls"
+
+            print("     - Dropping duplicates")
+            umls_df.drop_duplicates(subset=["cui", "definition"], ignore_index=True, inplace=True)
 
         except Exception as e:
             print("         ! Executing load UMLS query went wrong !")
