@@ -26,6 +26,9 @@ def process_html(x):
         print(x)
         return ""
 
+# Based on a term name (i.e. "headache"), we fetch the page
+# that results from the first search result when searching
+# wikipedia for that term name.
 async def fetch(session, name, api):
     try:
         searchlist = api.search(name, results=1)
@@ -37,19 +40,20 @@ async def fetch(session, name, api):
     async with session.get(url) as response:
         return await response.text()
 
+# Based on multiple term names, run fetch for each one of
+# those. Fetch is explained in its above comment.
 async def fetch_multiple(names, api):
     async with aiohttp.ClientSession() as session:
         tasks = [fetch(session, name, api) for name in names]
         responses = await asyncio.gather(*tasks)
     return responses
 
-pd.options.display.max_rows = 1000
+# For visual purposes if you need
+# pd.options.display.max_rows = 1000
 
 async def scrape():
     print("     - Loading Data")
     df = pd.read_csv(READY_DATA_PATH + READY_DATA_FILE, nrows=None)
-
-    print(df.head(100))
 
     print(f"     - Length of data: {len(df)}")
 
@@ -63,38 +67,15 @@ async def scrape():
 
     responses_df = pd.DataFrame()
 
+    # Basically this takes every single row in READY_DATA_PATH + READY_DATA_FILE, and finds a
+    # wikipedia search result to grab that definition and add to the current definition. Important
+    # because it will play a huge role in having additional definition information for training the
+    # doc2vec model.
     print("     - Starting Scraping Process")
     for i in tqdm.tqdm(range(0, len(df)//parallel_size + 1), desc="     Parallel Scraping"):
         time.sleep(1)
         try:
             terms = df["name"].iloc[i*parallel_size:(i*parallel_size)+parallel_size].to_list()
-
-            # # Get term name
-            # name = df["name"].iloc[i - 1] # Name to search
-            # language_code = 'en'
-            # number_of_results = 1
-            # headers = {
-            #     "User-Agent" : "TestingAPI (ineto001@ucr.edu)"
-            # }
-            # base_url = "https://api.wikimedia.org/core/v1/wikipedia/"
-            # endpoint = "/search/page"
-            # url = base_url + language_code + endpoint
-            # parameters = {
-            #     "q" : name,
-            #     "limit" : number_of_results
-            # }
-            # response = requests.get(url, headers=headers, params=parameters)
-            # json_response = json.loads(response.text)
-            # # Get the first page in the result
-            # page = json_response["pages"][0]
-            # article_url   = "https://" + language_code + ".wikipedia.org/wiki/" + page["key"]
-            # article = requests.get(article_url).content
-            # df["definition"] = df["definition"] + " " + process_html(article)
-
-            # searchlist = mediawikiapi.search(name, results=1)
-            # firstterm = searchlist[0] # get the first term
-            # page = mediawikiapi.page(firstterm)
-            # content = page.url
 
             responses = await fetch_multiple(terms, mediawikiapi)
             
@@ -104,32 +85,17 @@ async def scrape():
                     continue
                 responses[j] = " ".join(process_html(responses[j]).split(" ")[:KEEPWORDS])
 
-            # print(terms)
-            # print(responses)
-
             responses_df = pd.concat([ responses_df, pd.DataFrame(responses) ], ignore_index=True)
-
-            # print(responses_df)
-
-            # print( " ".join(content.split(" ")[:KEEPWORDS][:100] ))
-            # Append definition to the current definition and keep only certain amount of words
-            # df["definition"] = df["definition"] + " " + " ".join(content.split(" ")[:KEEPWORDS])
 
         except Exception as e:
             print(e)
 
-    # print(len(responses_df))
-    # print(len(df))
-
-    # print(responses_df)
-    # print(df)
-
+    # Concatenate the wikipedia definition to the current definition
     df["definition"] = df["definition"] + " " + responses_df[0]
 
-    # print(df)
-
+    # The little wrapper ensures we don't have anything open
+    # before we save because this step takes so long.
     done = False
-
     while not done:
         try:
             print(f"     - Saving to {WIKI_DATA_PATH + WIKI_DATA_FILE}")
