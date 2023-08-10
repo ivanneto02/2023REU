@@ -100,8 +100,6 @@ def tag_terms():
     print("     - Dropping random 1's")
     joined_df.drop(joined_df[joined_df["cui"] == "1"].index, inplace=True)
 
-    print(joined_df)
-
     final_df = pd.concat([joined_df, df_umls], axis=0)
     final_df.drop(columns=["index"], inplace=True)
     final_df.reset_index(drop=True, inplace=True)

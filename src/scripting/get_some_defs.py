@@ -12,13 +12,15 @@ def main():
     print(" > Reading data")
 
     df = pd.read_csv(
-            os.environ["_SCRAPED_DATA_PATH"] + os.environ["_SCRAPED_DATA_FILE"],
+            os.environ["_READY_DATA_PATH"] + os.environ["_READY_DATA_FILE"],
             nrows=10
         )
     
-    print(df[["name", "raw_html", "source_name", "concept_type"]].head(5))
+    print(df.head(5))
     print(f"Length: {len(df)}")
     print(f"Columns: {df.columns}")
+
+    df.to_csv(os.environ["_READY_DATA_PATH"] + "test.csv", index=False)
 
 if __name__ == "__main__":
     main()

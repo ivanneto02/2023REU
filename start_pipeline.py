@@ -47,7 +47,7 @@ def main():
             opposite way, it would take MUCH longer to execute for the same result! BEWARE.
         '''
 
-        # Will drop NA rows associated with CUIs and definitions
+        # Will drop NA rows associated with CUIs
         preprocessing.drop_nas()
 
         ## Important step - Later will decide whether including the entire                      PLEASE READ     **
@@ -59,6 +59,13 @@ def main():
         ## step between different sources but will have to see.
         preprocessing.normalize() # This is probably very important
         
+        ## Important step - This is arguably the most important aspect of the
+        ## process because it allows us to get relational definition information
+        ## for each concept, which will help detect semantically related concepts immensely.
+        ## The idea is that child/parent concepts and narrow/broad concepts should be semantically
+        ## related.
+        preprocessing.boostconcepts()
+
         # ---------
         print("> Starting [SCRAPING] process")
         ## This step is EXTREMELY important because it allows us to have the

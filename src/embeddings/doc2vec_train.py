@@ -12,9 +12,10 @@ from multiprocessing import Pool
 def doc2vec_train():
     print(" > Doc2Vec training...")
     print("     - Reading data")
-    df = pd.read_csv(READY_DATA_PATH + READY_DATA_FILE, nrows=None)
+    df = pd.read_csv(WIKI_DATA_PATH + WIKI_DATA_FILE, nrows=None)
 
     df["definition"] = df["name"] + " " + df["definition"]
+    df.dropna(subset=["definition"], inplace=True)
 
     sentences = df["definition"].to_list()
     cuis      = df["cui"].to_list()

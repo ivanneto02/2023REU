@@ -55,12 +55,14 @@ async def scrape():
     print("     - Loading Data")
     df = pd.read_csv(READY_DATA_PATH + READY_DATA_FILE, nrows=None)
 
+    df["wiki_definition"] = ""
+
     print(f"     - Length of data: {len(df)}")
 
     mediawikiapi = MediaWikiAPI()
 
     # Scraping
-    parallel_size = 50
+    parallel_size = 500
 
     if (len(df) < PARALLEL_SIZE):
         parallel_size = len(df)
@@ -72,26 +74,26 @@ async def scrape():
     # because it will play a huge role in having additional definition information for training the
     # doc2vec model.
     print("     - Starting Scraping Process")
-    for i in tqdm.tqdm(range(0, len(df)//parallel_size + 1), desc="     Parallel Scraping"):
+    for i in tqdm.tqdm(range(0, len(df)//parallel_size + 1), desc="     Parallel scraping"):
         time.sleep(1)
         try:
             terms = df["name"].iloc[i*parallel_size:(i*parallel_size)+parallel_size].to_list()
 
             responses = await fetch_multiple(terms, mediawikiapi)
-            
             # Limit words in each responses text
             for j in range(0, len(responses)):
                 if responses[j] == "":
                     continue
-                responses[j] = " ".join(process_html(responses[j]).split(" ")[:KEEPWORDS])
-
+                responses[j] = process_html(responses[j])
             responses_df = pd.concat([ responses_df, pd.DataFrame(responses) ], ignore_index=True)
 
         except Exception as e:
+            responses = [""]*parallel_size
+            responses_df = pd.concat([ responses_df, pd.DataFrame(responses) ], ignore_index=True)
             print(e)
 
     # Concatenate the wikipedia definition to the current definition
-    df["definition"] = df["definition"] + " " + responses_df[0]
+    df["wiki_definition"] = df["wiki_definition"] + " " + responses_df[0]
 
     # The little wrapper ensures we don't have anything open
     # before we save because this step takes so long.

@@ -14,4 +14,4 @@ def normalize():
 
     print("     - NO normalizing step yet")
     print(f"     - Saving to {READY_DATA_PATH + READY_DATA_FILE}")
-    df.to_csv(READY_DATA_PATH + READY_DATA_FILE, index=False)
+    df.to_csv(SAVE_DATA_PATH + SAVE_DATA_FILE, index=False)

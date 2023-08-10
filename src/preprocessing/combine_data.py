@@ -2,9 +2,7 @@ import pandas as pd
 from config import *
 from .mysql_connect import connect
 from .mysql_disconnect import disconnect
-
 import tqdm
-
 from bs4 import BeautifulSoup, SoupStrainer
 
 def combine_data():
@@ -35,17 +33,19 @@ def load_umls():
         # Grab the table
         definitions_query = f'''
             SELECT                                              
-                DISTINCT MRDEF.CUI, MRCONSO.STR, MRDEF.DEF
-            FROM                                                
-                MRDEF, MRCONSO                                  
-            WHERE                                               
-                MRDEF.CUI = MRCONSO.CUI                         
+     	        DISTINCT COALESCE(MRDEF.CUI, MRCONSO.CUI), MRCONSO.STR, MRDEF.DEF
+            FROM
+                MRCONSO
+            LEFT OUTER JOIN
+                MRDEF
+            ON
+                MRCONSO.`CUI` = MRDEF.`CUI`             
         '''
 
         # DataFrame storing
         # cui, str, def
         umls_df = None
-        columns = ["cui", "name", "definition"]
+        columns = ["cui", "name", "umls_definition"]
 
         if NROWS is not None:
             definitions_query += f'''
@@ -62,13 +62,15 @@ def load_umls():
             umls_df["source"] = "umls"
 
             print("     - Dropping duplicates")
-            umls_df.drop_duplicates(subset=["cui", "definition"], ignore_index=True, inplace=True)
+            umls_df.drop_duplicates(subset=["cui", "umls_definition"], ignore_index=True, inplace=True)
 
         except Exception as e:
             print("         ! Executing load UMLS query went wrong !")
             print(e)
 
         print(f"         - Length of data: {len(umls_df)}")
+
+        # print(umls_df.head(10))
 
         return umls_df
 
@@ -85,5 +87,5 @@ def load_nonumls():
     df = df[["name", "raw_html"]]
 
     df["source"] = "scraped"
-    df.rename(inplace=True, columns={'raw_html' : 'definition'})
+    df.rename(inplace=True, columns={'raw_html' : 'scraped_definition'})
     return df

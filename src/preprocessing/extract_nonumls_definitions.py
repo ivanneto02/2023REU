@@ -21,15 +21,13 @@ def extract_nonumls_definitions():
         # extract definitions from html
         tqdm.pandas()
         print("     - Extracting definitions (may take a while)")
-        df_scraped["definition"] = df_scraped["definition"].progress_apply(extract)
+        df_scraped["scraped_definition"] = df_scraped["scraped_definition"].progress_apply(extract)
     except Exception as e:
         print("             ! Something went wrong with extracting definitions !")
         print(e)
 
     # put the two together again
     df_final = pd.concat([df_scraped, df_umls], axis=0)
-
-    # print(df_final.head(10))
 
     # save data
     print(f"     - Saving to {SAVE_DATA_PATH + SAVE_DATA_FILE}")
